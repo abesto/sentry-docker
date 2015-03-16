@@ -249,9 +249,11 @@ if SENTRY_USE_LDAP:
 SENTRY_USE_REMOTE_USER = config('SENTRY_USE_REMOTE_USER', default=False, cast=bool)
 
 if SENTRY_USE_REMOTE_USER:
-    AUTHENTICATION_BACKENDS += ('django.contrib.auth.backends.RemoteUserBackend',)
-
     AUTH_REMOTE_USER_HEADER = config('AUTH_REMOTE_USER_HEADER', default=None)
+    AUTH_REMOTE_USER_EVERYONE_STAFF = config('AUTH_REMOTE_USER_EVERYONE_STAFF', default=False, cast=bool)
+    AUTH_REMOTE_USER_EVERYONE_SUPERUSER = config('AUTH_REMOTE_USER_EVERYONE_SUPERUSER', default=False, cast=bool)
+    AUTH_REMOTE_USER_IS_EMAIL = config('AUTH_REMOTE_USER_IS_EMAIL', default=None, cast=bool)
+
     if AUTH_REMOTE_USER_HEADER:
         # The lazy hack is required because importing RemoteUserMiddleware at load time leads to a circular import
         # The name is upper camel case because that's the only way to expose values from this config file
@@ -265,3 +267,27 @@ if SENTRY_USE_REMOTE_USER:
         MIDDLEWARE_CLASSES += ('sentry_config.LAZY_CUSTOM_REMOTE_USER_MIDDLEWARE',)
     else:
         MIDDLEWARE_CLASSES += ('django.contrib.auth.middleware.RemoteUserMiddleware',)
+
+    if AUTH_REMOTE_USER_EVERYONE_SUPERUSER or AUTH_REMOTE_USER_EVERYONE_STAFF or AUTH_REMOTE_USER_EMAIL_:
+        # The lazy hack is required because importing RemoteUserBackend at load time leads to a circular import
+        # The name is upper camel case because that's the only way to expose values from this config file
+        def build_LAZY_CUSTOM_REMOTE_USER_BACKEND(is_superuser, is_staff, username_is_email, *args, **kwargs):
+            from django.contrib.auth.backends import RemoteUserBackend
+            class CustomRemoteUserBackend(RemoteUserBackend):
+                def configure_user(self, user):
+                    user.is_superuser = self.is_superuser
+                    user.is_staff = self.is_staff
+                    if username_is_email:
+                        user.email = user.username
+                    user.save()
+                    return user
+            CustomRemoteUserBackend.is_superuser = is_superuser
+            CustomRemoteUserBackend.is_staff = is_staff
+            return CustomRemoteUserBackend(*args, **kwargs)
+        LAZY_CUSTOM_REMOTE_USER_BACKEND  = functools.partial(build_LAZY_CUSTOM_REMOTE_USER_BACKEND, \
+                                                             AUTH_REMOTE_USER_EVERYONE_SUPERUSER,\
+                                                             AUTH_REMOTE_USER_EVERYONE_STAFF,\
+                                                             AUTH_REMOTE_USER_IS_EMAIL)
+        AUTHENTICATION_BACKENDS = ('sentry_config.LAZY_CUSTOM_REMOTE_USER_BACKEND',) + AUTHENTICATION_BACKENDS
+    else:
+        AUTHENTICATION_BACKENDS += ('django.contrib.auth.backends.RemoteUserBackend',)
