@@ -1,3 +1,5 @@
+*This branch adds some customization to REMOTE_USER authentication*
+
 Sentry in Docker
 ==================
 
