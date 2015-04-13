@@ -14,3 +14,5 @@ sentry[postgres]==7.4.3
 # ldap user store
 django-auth-ldap==1.2.5
 
+# sentry-pagerduty
+git+git://github.com/getsentry/sentry-pagerduty.git

@@ -1,4 +1,7 @@
-*This branch adds some customization to REMOTE_USER authentication*
+This fork of slafs/sentry adds:
+
+ * some customization to REMOTE_USER authentication
+ * the `sentry-pagerduty` plugin (from the [getsentry fork](https://github.com/getsentry/sentry-pagerduty))
 
 Sentry in Docker
 ==================
