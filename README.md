@@ -1,3 +1,5 @@
+*This branch adds some customization to REMOTE_USER authentication*
+
 Sentry in Docker
 ==================
 
@@ -254,6 +256,9 @@ LDAP_GROUP_CACHE_TIMEOUT        | AUTH_LDAP_GROUP_CACHE_TIMEOUT                 
 LDAP_LOGLEVEL                   |                                               |      | ``DEBUG``                                             | django_auth_ldap logger level (other values: NOTSET (to disable), INFO, WARNING, ERROR or CRITICAL)
 SENTRY_USE_REMOTE_USER          |                                               | bool | False                                                 | use `REMOTE_USER` for authentication; useful if you're behind your own SSO
 AUTH_REMOTE_USER_HEADER         |                                               |      | None                                                  | if set, this value will be read from the request object instead of `REMOTE_USER`, as described [here](https://docs.djangoproject.com/en/1.7/howto/auth-remote-user/). For example: `HTTP_X_SSO_USERNAME`
+AUTH_REMOTE_USER_EVERYONE_STAFF |                                               | bool | False                                                 | the `is_staff` flag of new users created when they log in via `REMOTE_USER`
+AUTH_REMOTE_USER_EVERYONE_SUPERUSER |                                           | bool | False                                                 | the `is_superuser` flag of new users created when they log in via `REMOTE_USER`
+AUTH_REMOTE_USER_IS_EMAIL       |                                               | bool | False                                                 | set the email of users created via `REMOTE_USER` login to the username. use if the `REMOTE_USER` passed to Sentry is actually an email.
 SENTRY_INITIAL_TEAM             |                                               |      |                                                       | convenient in development - creates an initial team inside Sentry DB with the given name
 SENTRY_INITIAL_PROJECT          |                                               |      |                                                       | convenient in development - creates an initial project for the above team (owner for both is the created admin )
 SENTRY_INITIAL_PLATFORM         |                                               |      | 'python'                                              | convenient in development - indicates a platform for the above initial project
